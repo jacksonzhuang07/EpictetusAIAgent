@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Epictetus Auditor</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&display=swap');
+        
+        body {
+            background-color: #000000;
+            color: #ffffff;
+            font-family: 'Times New Roman', Times, serif;
+        }
+        
+        /* Custom Scrollbar for a premium feel */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #000000; 
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #333; 
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col items-center justify-center p-4 selection:bg-white selection:text-black">
+
+    <!-- Main Container -->
+    <div class="w-full max-w-md space-y-8 animate-fade-in-up">
+        
+        <!-- Header -->
+        <header class="text-center space-y-2">
+            <h1 class="text-4xl font-bold tracking-widest uppercase border-b border-white pb-4">
+                Enchiridion
+            </h1>
+            <p class="text-sm italic opacity-70">The Stoic Auditor</p>
+        </header>
+
+        <!-- Input Section -->
+        <div class="space-y-4">
+            <label for="problem" class="block text-sm uppercase tracking-wide opacity-80">
+                What troubles you?
+            </label>
+            <textarea 
+                id="problem" 
+                rows="4" 
+                class="w-full bg-black border border-white p-4 text-lg focus:outline-none focus:ring-1 focus:ring-white transition-all resize-none placeholder-gray-600"
+                placeholder="Describe your situation..."
+            ></textarea>
+            
+            <button 
+                onclick="seekAdvice()"
+                class="w-full bg-white text-black font-bold py-3 uppercase tracking-widest hover:bg-gray-200 transition-colors border border-white"
+            >
+                Consult Epictetus
+            </button>
+        </div>
+
+        <!-- Output Section (Hidden initially) -->
+        <div id="outputContainer" class="hidden space-y-6 pt-8 border-t border-gray-800">
+            
+            <!-- Result Card -->
+            <div class="border border-white p-6 space-y-4 relative">
+                <div class="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-black px-2 uppercase text-xs tracking-widest border border-white">
+                    Verdict
+                </div>
+                
+                <div class="grid grid-cols-2 gap-4 text-center border-b border-gray-800 pb-4">
+                    <div>
+                        <span class="block text-xs uppercase opacity-50">Control</span>
+                        <span id="classification" class="text-lg font-bold"></span>
+                    </div>
+                    <div>
+                        <span class="block text-xs uppercase opacity-50">Reference</span>
+                        <span id="chapter" class="text-lg font-bold"></span>
+                    </div>
+                </div>
+
+                <div class="text-center space-y-2">
+                    <span class="block text-xs uppercase opacity-50">Action</span>
+                    <p id="action" class="text-xl italic font-bold"></p>
+                </div>
+            </div>
+
+            <!-- The Advice Text -->
+            <div class="space-y-2">
+                <span class="block text-xs uppercase opacity-50 text-center">Counsel</span>
+                <p id="advice" class="text-lg leading-relaxed text-justify opacity-90"></p>
+            </div>
+
+        </div>
+
+    </div>
+
+    <script>
+        async function seekAdvice() {
+            const problem = document.getElementById('problem').value;
+            const btn = document.querySelector('button');
+            const output = document.getElementById('outputContainer');
+            
+            if (!problem) return;
+
+            // Loading State
+            btn.innerText = "Consulting...";
+            btn.disabled = true;
+            output.classList.add('hidden');
+
+            try {
+                const response = await fetch('/advice', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ problem: problem })
+                });
+                
+                const data = await response.json();
+
+                // Populate Data
+                document.getElementById('classification').innerText = data.classification;
+                document.getElementById('chapter').innerText = data.chapter;
+                document.getElementById('action').innerText = data.action;
+                document.getElementById('advice').innerText = data.advice;
+
+                // Show Output
+                output.classList.remove('hidden');
+                
+                // Smooth scroll to output
+                output.scrollIntoView({ behavior: 'smooth' });
+
+            } catch (error) {
+                console.error("Error:", error);
+                alert("The Stoic Auditor is silent. (Server Error)");
+            } finally {
+                btn.innerText = "Consult Epictetus";
+                btn.disabled = false;
+            }
+        }
+    </script>
+</body>
+</html>
